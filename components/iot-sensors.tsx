@@ -39,8 +39,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-// Función para formatear fechas de manera segura
-const formatDate = (dateString) => {
+// Corregir la función formatDate para manejar correctamente los tipos
+const formatDate = (dateString: string | undefined | null) => {
   try {
     if (!dateString) return "N/A"
     const date = new Date(dateString)

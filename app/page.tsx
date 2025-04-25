@@ -408,7 +408,7 @@ export default function HomePage() {
     show: { opacity: 1, y: 0 },
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) return "Fecha desconocida"
     const date = new Date(dateString)
     return new Intl.DateTimeFormat("es-ES", {
@@ -724,7 +724,7 @@ export default function HomePage() {
                     className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-blue-600"
                   >
                     <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                    Estadísticas 
+                    Estadísticas
                   </TabsTrigger>
                   <TabsTrigger
                     value="settings"
