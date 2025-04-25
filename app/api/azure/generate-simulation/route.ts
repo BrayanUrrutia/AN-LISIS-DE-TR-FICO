@@ -214,4 +214,3 @@ function generateSimulationData(
 
   return data
 }
-

@@ -10,7 +10,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 201 94% 37%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -22,8 +22,14 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 201 94% 37%;
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    --chart-1: 221.2 83.2% 53.3%;
+    --chart-2: 142.1 76.2% 36.3%;
+    --chart-3: 346.8 77.2% 49.8%;
+    --chart-4: 43.3 96.4% 56.3%;
+    --chart-5: 262.1 83.3% 57.8%;
+    --chart-6: 24.6 95% 53.1%;
   }
 
   .dark {
@@ -33,7 +39,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 201 94% 37%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -45,7 +51,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 201 94% 37%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -55,109 +61,913 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "JetBrains Mono", "IBM Plex Mono", "Roboto Mono", "Source Code Pro", monospace;
   }
 }
 
+/* Fuentes personalizadas */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+.mono-text {
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: -0.02em;
+}
+
+.mono-heading {
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: -0.03em;
+}
+
+/* Estilos para el fondo */
 .mall-bg {
-  background: linear-gradient(135deg, #f0f4f8 0%, #d5e6f3 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
   position: relative;
 }
 
-.mall-bg::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
-    linear-gradient(120deg, rgba(3, 105, 161, 0.1) 0%, rgba(13, 148, 136, 0.1) 100%);
-  background-size: 100px 100px, cover;
-  z-index: -1;
-}
-
-.data-card {
-  backdrop-filter: blur(8px);
-  background-color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.analytics-header {
-  background: linear-gradient(90deg, rgba(3, 105, 161, 0.95) 0%, rgba(13, 148, 136, 0.95) 100%);
-}
-
-.chart-container {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* Patrones de centro comercial */
 .mall-pattern {
   position: relative;
 }
 
-.mall-pattern::after {
+.mall-pattern::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: linear-gradient(
-      30deg,
-      rgba(59, 130, 246, 0.05) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(59, 130, 246, 0.05) 87.5%,
-      rgba(59, 130, 246, 0.05)
-    ),
-    linear-gradient(
-      150deg,
-      rgba(59, 130, 246, 0.05) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(59, 130, 246, 0.05) 87.5%,
-      rgba(59, 130, 246, 0.05)
-    ),
-    linear-gradient(
-      30deg,
-      rgba(59, 130, 246, 0.05) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(59, 130, 246, 0.05) 87.5%,
-      rgba(59, 130, 246, 0.05)
-    ),
-    linear-gradient(
-      150deg,
-      rgba(59, 130, 246, 0.05) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(59, 130, 246, 0.05) 87.5%,
-      rgba(59, 130, 246, 0.05)
-    );
-  background-size: 80px 140px;
-  background-position: 0 0, 0 0, 40px 70px, 40px 70px;
-  z-index: -1;
-  opacity: 0.8;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.5;
+  z-index: 0;
 }
 
-/* Estilo de texto monospace mejorado */
-.mono-text {
-  font-family: "JetBrains Mono", "IBM Plex Mono", "Roboto Mono", "Source Code Pro", monospace;
-  letter-spacing: -0.03em;
+/* Estilos para el header */
+.analytics-header {
+  background: linear-gradient(135deg, #1e40af 0%, #0369a1 100%);
 }
 
-.mono-heading {
-  font-family: "JetBrains Mono", "IBM Plex Mono", "Roboto Mono", "Source Code Pro", monospace;
-  letter-spacing: 0.05em;
-  font-weight: 700;
+/* Estilos para las tarjetas de datos */
+.data-card {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Elementos de diseño de centro comercial */
+.data-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.data-card:hover::before {
+  opacity: 1;
+}
+
+/* Estilos para el grid del mall */
 .mall-grid {
-  background-image: linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.8) 1px, transparent 1px);
   background-size: 20px 20px;
+  background-position: -1px -1px;
 }
 
+/* Animaciones */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Estilos para los gráficos */
+.chart-container {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+}
+
+/* Estilos para las tablas */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table th {
+  background-color: rgba(59, 130, 246, 0.1);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Estilos para los botones de acción */
+.action-button {
+  transition: all 0.2s ease;
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(1px);
+}
+
+/* Estilos para los tooltips */
+.custom-tooltip {
+  background-color: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  color: white;
+  font-size: 0.875rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para los formularios */
+.form-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+/* Estilos para los badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.online {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-badge.offline {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-badge.warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+/* Estilos para los paneles de información */
+.info-panel {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-left: 4px solid #3b82f6;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.info-panel.warning {
+  background-color: rgba(245, 158, 11, 0.05);
+  border-left-color: #f59e0b;
+}
+
+.info-panel.error {
+  background-color: rgba(239, 68, 68, 0.05);
+  border-left-color: #ef4444;
+}
+
+.info-panel.success {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-left-color: #10b981;
+}
+
+/* Estilos para los contenedores de secciones */
+.section-container {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Estilos para los contenedores de tarjetas */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para los contenedores de gráficos */
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para los contenedores de estadísticas */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Estilos para los contenedores de acciones */
+.actions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para los contenedores de filtros */
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 0.5rem;
+}
+
+/* Estilos para los contenedores de alertas */
+.alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para los contenedores de configuración */
+.config-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .config-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para los contenedores de usuarios */
+.users-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .users-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para los contenedores de logs */
+.logs-container {
+  height: 300px;
+  overflow-y: auto;
+  background-color: #0f172a;
+  color: #e2e8f0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.875rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.log-entry {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.log-entry.info {
+  color: #93c5fd;
+}
+
+.log-entry.warning {
+  color: #fcd34d;
+}
+
+.log-entry.error {
+  color: #fca5a5;
+}
+
+.log-entry.success {
+  color: #86efac;
+}
+
+/* Estilos para los contenedores de métricas */
+.metrics-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .metrics-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Estilos para los contenedores de notificaciones */
+.notifications-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 50;
+}
+
+.notification {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 24rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Estilos para los contenedores de progreso */
+.progress-container {
+  width: 100%;
+  height: 0.5rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Estilos para los contenedores de pasos */
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(59, 130, 246, 0.2);
+  z-index: 0;
+}
+
+.step.active:not(:last-child)::after {
+  background-color: #3b82f6;
+}
+
+.step-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.step.active .step-icon {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.step.active .step-label {
+  color: #3b82f6;
+}
+
+/* Estilos para los contenedores de tabs */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.1);
+  margin-bottom: 1rem;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Estilos para los contenedores de modales */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 32rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Estilos para los contenedores de tooltips */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 20;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.tooltip:hover .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Estilos para los contenedores de dropdowns */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  min-width: 10rem;
+  z-index: 20;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown.open .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+/* Estilos para los contenedores de acordeones */
+.accordion {
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.accordion-header {
+  padding: 1rem;
+  background-color: rgba(59, 130, 246, 0.05);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accordion-title {
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.accordion-icon {
+  transition: transform 0.2s ease;
+}
+
+.accordion.open .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  padding: 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.2);
+  display: none;
+}
+
+.accordion.open .accordion-content {
+  display: block;
+}
+
+/* Estilos para los contenedores de carruseles */
+.carousel {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.carousel-inner {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.carousel-item {
+  flex: 0 0 100%;
+}
+
+.carousel-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.carousel-control {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.carousel-control.active {
+  background-color: white;
+}
+
+/* Estilos para los contenedores de paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 1.5rem;
+}
+
+.pagination-item {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-item:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.pagination-item.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.pagination-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilos para los contenedores de búsqueda */
+.search-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  color: #6b7280;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  color: #6b7280;
+  cursor: pointer;
+}
+
+/* Estilos para los contenedores de filtros avanzados */
+.advanced-filters {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e40af;
+  margin-bottom: 0.25rem;
+}
+
+/* Estilos para los componentes interactivos */
+.interactive-element {
+  transition: all 0.2s ease;
+}
+
+.interactive-element:hover {
+  transform: scale(1.02);
+}
+
+.interactive-element:active {
+  transform: scale(0.98);
+}
+
+/* Estilos específicos para el tema de centro comercial */
+.mall-theme {
+  --mall-primary: #14b8a6;
+  --mall-secondary: #0f766e;
+  --mall-accent: #0d9488;
+  --mall-background: #0f172a;
+  --mall-foreground: #f8fafc;
+  --mall-border: #334155;
+  --mall-card: #1e293b;
+  --mall-card-hover: #334155;
+}
+
+/* Estilos para el tema oscuro de centro comercial */
+.mall-dark {
+  background-color: var(--mall-background);
+  color: var(--mall-foreground);
+}
+
+.mall-card {
+  background-color: var(--mall-card);
+  border-color: var(--mall-border);
+  transition: all 0.3s ease;
+}
+
+.mall-card:hover {
+  background-color: var(--mall-card-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.mall-button {
+  background-color: var(--mall-primary);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.mall-button:hover {
+  background-color: var(--mall-secondary);
+}
+
+/* Estilos para el efecto de vidrio (glassmorphism) */
+.glass-effect {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos para el efecto de neón */
+.neon-text {
+  color: #14b8a6;
+  text-shadow: 0 0 5px rgba(20, 184, 166, 0.5), 0 0 10px rgba(20, 184, 166, 0.3);
+}
+
+.neon-border {
+  border: 1px solid #14b8a6;
+  box-shadow: 0 0 5px rgba(20, 184, 166, 0.5), 0 0 10px rgba(20, 184, 166, 0.3);
+}
+
+/* Estilos para el scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(20, 184, 166, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(20, 184, 166, 0.7);
+}

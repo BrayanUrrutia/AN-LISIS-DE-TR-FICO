@@ -22,4 +22,3 @@ export function Stripe({ options, className, children, ...props }: StripeProps) 
     </div>
   )
 }
-

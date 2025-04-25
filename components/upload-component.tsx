@@ -7,10 +7,10 @@ import { Upload, FileUp, Check, AlertCircle, FileJson, FileSpreadsheet } from "l
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Card } from "@/components/ui/card"
 import { toast } from "@/components/ui/use-toast"
 
-export default function UploadComponent() {
+// Eliminar el contenedor de Card para que ocupe todo el espacio disponible
+export default function UploadComponent({ onUploadComplete }) {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -149,6 +149,11 @@ export default function UploadComponent() {
         variant: "default",
       })
 
+      // Notificar al componente padre que la carga se completó
+      if (typeof onUploadComplete === "function") {
+        onUploadComplete()
+      }
+
       setTimeout(() => {
         setUploadProgress(0)
         setFile(null) // Limpiar el archivo después de subir exitosamente
@@ -182,7 +187,7 @@ export default function UploadComponent() {
   return (
     <div className="space-y-6">
       <div
-        className="border-2 border-dashed rounded-lg p-10 text-center cursor-pointer hover:bg-blue-50 transition-colors border-blue-200"
+        className="border-2 border-dashed rounded-lg p-10 text-center cursor-pointer hover:bg-blue-50 transition-colors border-blue-100 bg-white"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
@@ -196,7 +201,7 @@ export default function UploadComponent() {
       </div>
 
       {file && (
-        <Card className="p-4 border-blue-200 bg-blue-50">
+        <div className="p-4 border border-blue-200 bg-blue-50 rounded-lg">
           <div className="flex items-center gap-3">
             <FileUp className="h-6 w-6 text-indigo-600" />
             <div className="flex-1">
@@ -217,7 +222,7 @@ export default function UploadComponent() {
               <p className="text-xs text-right mt-1 text-blue-700">{uploadProgress}%</p>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       {uploadStatus !== "idle" && (
@@ -237,4 +242,3 @@ export default function UploadComponent() {
     </div>
   )
 }
-

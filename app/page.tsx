@@ -2,49 +2,58 @@
 
 import { useState, useEffect } from "react"
 import {
-  Upload,
-  Download,
-  BarChart3,
-  Settings,
-  Building2,
-  Users,
-  ShoppingBag,
   FileText,
   Trash2,
   RefreshCw,
+  Search,
+  Clock,
+  Database,
+  Layers,
+  Upload,
+  BarChart3,
+  Settings,
+  Building2,
+  Cpu,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import UploadComponent from "@/components/upload-component"
-import DataVisualization from "@/components/data-visualization"
-import SimulationSettings from "@/components/simulation-settings"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
+import { motion, AnimatePresence } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
+import UploadComponent from "@/components/upload-component"
+import DataVisualization from "@/components/data-visualization"
+import SimulationSettings from "@/components/simulation-settings"
+import IoTSensors from "@/components/iot-sensors"
 
 // Nota: Para que la aplicación funcione correctamente con Azure,
 // es necesario configurar la variable de entorno AZURE_STORAGE_CONNECTION_STRING
 // con la cadena de conexión de Azure Storage.
 
-export default function Home() {
+export default function HomePage() {
   const [activeTab, setActiveTab] = useState("upload")
   const [data, setData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
   const [files, setFiles] = useState<any[]>([])
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [processingData, setProcessingData] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([])
 
   // Cargar datos desde localStorage al inicio
   useEffect(() => {
-    const storedData = localStorage.getItem("simulationData")
-    if (storedData) {
-      try {
+    try {
+      const storedData = localStorage.getItem("simulationData")
+      if (storedData) {
         setData(JSON.parse(storedData))
-      } catch (error) {
-        console.error("Error al cargar datos desde localStorage:", error)
       }
+    } catch (error) {
+      console.error("Error al cargar datos desde localStorage:", error)
     }
 
     // Cargar lista de archivos
@@ -148,35 +157,6 @@ export default function Home() {
     }
   }
 
-  const fetchData = async () => {
-    setIsLoading(true)
-    try {
-      // Verificar si hay archivos disponibles
-      if (files.length === 0) {
-        toast({
-          title: "No hay archivos disponibles",
-          description:
-            "No hay archivos en Azure para cargar. Por favor, sube un archivo o genera una simulación primero.",
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
-
-      // Cargar el archivo más reciente
-      await fetchFile(files[0].name)
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      toast({
-        title: "Error al cargar datos",
-        description: `${error instanceof Error ? error.message : "Error desconocido"}`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const deleteFile = async (fileName: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar el archivo ${fileName}?`)) {
       return
@@ -212,6 +192,11 @@ export default function Home() {
         localStorage.removeItem("simulationData")
       }
 
+      // Eliminar de la lista de seleccionados si estaba seleccionado
+      if (selectedFiles.includes(fileName)) {
+        setSelectedFiles(selectedFiles.filter((f) => f !== fileName))
+      }
+
       toast({
         title: "Archivo eliminado",
         description: `El archivo ${fileName} ha sido eliminado correctamente.`,
@@ -227,6 +212,72 @@ export default function Home() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const deleteSelectedFiles = async () => {
+    if (selectedFiles.length === 0) {
+      toast({
+        title: "No hay archivos seleccionados",
+        description: "Por favor, selecciona al menos un archivo para eliminar.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedFiles.length} archivo(s)?`)) {
+      return
+    }
+
+    setIsLoading(true)
+    let successCount = 0
+    let errorCount = 0
+
+    for (const fileName of selectedFiles) {
+      try {
+        const response = await fetch(`/api/azure/delete-file?fileName=${encodeURIComponent(fileName)}`, {
+          method: "DELETE",
+        })
+
+        if (!response.ok) {
+          errorCount++
+          continue
+        }
+
+        // Si el archivo eliminado era el seleccionado, limpiar la selección
+        if (selectedFile === fileName) {
+          setSelectedFile(null)
+          setData([])
+          localStorage.removeItem("simulationData")
+        }
+
+        successCount++
+      } catch (error) {
+        console.error(`Error deleting file ${fileName}:`, error)
+        errorCount++
+      }
+    }
+
+    // Actualizar la lista de archivos
+    await fetchFilesList()
+
+    // Limpiar la selección
+    setSelectedFiles([])
+
+    if (successCount > 0) {
+      toast({
+        title: "Archivos eliminados",
+        description: `Se han eliminado ${successCount} archivo(s) correctamente.${errorCount > 0 ? ` ${errorCount} archivo(s) no pudieron ser eliminados.` : ""}`,
+        variant: "default",
+      })
+    } else {
+      toast({
+        title: "Error al eliminar archivos",
+        description: "No se pudo eliminar ningún archivo.",
+        variant: "destructive",
+      })
+    }
+
+    setIsLoading(false)
   }
 
   const deleteData = async (deleteAll = true) => {
@@ -265,6 +316,7 @@ export default function Home() {
       localStorage.removeItem("simulationData")
       setData([])
       setSelectedFile(null)
+      setSelectedFiles([])
 
       // Actualizar la lista de archivos
       await fetchFilesList()
@@ -285,6 +337,61 @@ export default function Home() {
       setIsLoading(false)
     }
   }
+
+  const processData = () => {
+    // Verificar si hay datos para procesar
+    if (!selectedFile && files.length === 0) {
+      toast({
+        title: "No hay datos para procesar",
+        description: "Por favor, sube un archivo o genera una simulación primero.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Si no hay un archivo seleccionado pero hay archivos disponibles, cargar el primero
+    if (!selectedFile && files.length > 0) {
+      fetchFile(files[0].name)
+      return
+    }
+
+    // Si hay un archivo seleccionado, simular procesamiento
+    setProcessingData(true)
+
+    // Simular procesamiento de datos
+    setTimeout(() => {
+      setProcessingData(false)
+
+      // Cambiar a la pestaña de visualización
+      setActiveTab("data")
+
+      toast({
+        title: "Datos procesados",
+        description: "Los datos han sido procesados correctamente y están listos para visualización.",
+        variant: "default",
+      })
+    }, 2000)
+  }
+
+  const toggleFileSelection = (fileName: string) => {
+    if (selectedFiles.includes(fileName)) {
+      setSelectedFiles(selectedFiles.filter((f) => f !== fileName))
+    } else {
+      setSelectedFiles([...selectedFiles, fileName])
+    }
+  }
+
+  const selectAllFiles = () => {
+    if (selectedFiles.length === files.length) {
+      // Si todos están seleccionados, deseleccionar todos
+      setSelectedFiles([])
+    } else {
+      // Seleccionar todos
+      setSelectedFiles(files.map((f) => f.name))
+    }
+  }
+
+  const filteredFiles = files.filter((file) => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
 
   const container = {
     hidden: { opacity: 0 },
@@ -315,454 +422,363 @@ export default function Home() {
 
   const formatFileSize = (bytes) => {
     if (!bytes) return "Tamaño desconocido"
-    const units = ["B", "KB", "MB", "GB"]
-    let size = bytes
-    let unitIndex = 0
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024
-      unitIndex++
+    const units = ["B", "KB", "MB", "GB", "TB"]
+    let i = 0
+    for (i; bytes >= 1024 && i < units.length - 1; i++) {
+      bytes /= 1024
     }
-
-    return `${size.toFixed(2)} ${units[unitIndex]}`
+    return `${bytes.toFixed(2)} ${units[i]}`
   }
 
   return (
-    <div className="min-h-screen mall-bg mall-pattern">
-      <header className="analytics-header text-white py-10 px-4 shadow-lg relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -right-10 -top-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute left-1/4 -bottom-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
-        </div>
-        <div className="container mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-                <Building2 className="h-8 w-8" />
+    <div className="flex flex-col h-screen overflow-hidden bg-[url('/mall-background.jpg')] bg-cover bg-center bg-fixed">
+      {/* Overlay para mejorar la legibilidad del contenido sobre la imagen de fondo */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/90 to-blue-100/80 backdrop-blur-sm z-0"></div>
+
+      {/* Header restaurado */}
+      <header className="relative z-10 bg-blue-900 text-white py-3 px-4 md:px-6 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="bg-green-500 p-1.5 md:p-2 rounded-full">
+                <Building2 className="h-5 w-5 md:h-6 md:w-6" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight mono-heading">ANÁLISIS DE TRÁFICO</h1>
-                <p className="text-blue-100 mt-1 font-light tracking-wider mono-text">
-                  SISTEMA DE MONITOREO DE AFLUENCIA EN CENTROS COMERCIALES
-                </p>
+                <h1 className="text-lg md:text-xl font-bold tracking-tight">MALL TRAFFIC ANALYTICS</h1>
+                <p className="text-xs md:text-sm text-green-300">Análisis avanzado de tráfico comercial</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto py-8 px-4">
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.div variants={item}>
-            <Card className="data-card shadow-md hover:shadow-lg transition-all duration-300 h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center h-full">
-                <div className="bg-blue-600 text-white p-3 rounded-full mb-4 shadow-md">
-                  <Users className="h-6 w-6" />
+      {/* Main content wrapper */}
+      <div className="flex flex-1 overflow-hidden relative z-10">
+        {/* Sidebar */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: "100%", maxWidth: "280px", opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="h-full bg-white/90 backdrop-blur-md border-r border-blue-200 overflow-y-auto z-10 shadow-lg"
+            >
+              <div className="p-3 md:p-4">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h2 className="text-lg md:text-xl font-bold text-blue-800 mono-heading">Archivos</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <Layers className="h-4 w-4" />
+                  </Button>
                 </div>
-                <CardTitle className="text-blue-800 mb-3 text-xl font-semibold tracking-tight mono-heading">
-                  ANÁLISIS DE VISITANTES
-                </CardTitle>
-                <p className="text-blue-700 leading-relaxed mono-text">
-                  Monitorea en tiempo real la afluencia de personas en diferentes zonas del centro comercial para
-                  optimizar la experiencia del cliente.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          <motion.div variants={item}>
-            <Card className="data-card shadow-md hover:shadow-lg transition-all duration-300 h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center h-full">
-                <div className="bg-teal-600 text-white p-3 rounded-full mb-4 shadow-md">
-                  <ShoppingBag className="h-6 w-6" />
+                <div className="relative mb-3 md:mb-4">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-blue-400" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar archivos..."
+                    className="pl-9 bg-white border-blue-200 text-blue-800 placeholder:text-blue-400 focus:ring-blue-500"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
-                <CardTitle className="text-teal-800 mb-3 text-xl font-semibold tracking-tight mono-heading">
-                  OPTIMIZACIÓN COMERCIAL
-                </CardTitle>
-                <p className="text-teal-700 leading-relaxed mono-text">
-                  Identifica patrones de tráfico para mejorar estratégicamente la ubicación de tiendas, promociones y
-                  maximizar las ventas.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          <motion.div variants={item}>
-            <Card className="data-card shadow-md hover:shadow-lg transition-all duration-300 h-full">
-              <CardContent className="p-6 flex flex-col items-center text-center h-full">
-                <div className="bg-emerald-600 text-white p-3 rounded-full mb-4 shadow-md">
-                  <BarChart3 className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="select-all"
+                      className="rounded border-blue-600 text-blue-600 focus:ring-blue-500 bg-white"
+                      checked={selectedFiles.length === files.length && files.length > 0}
+                      onChange={selectAllFiles}
+                    />
+                    <label htmlFor="select-all" className="text-xs md:text-sm text-blue-800 font-medium mono-text">
+                      {selectedFiles.length === files.length && files.length > 0
+                        ? "Deseleccionar todos"
+                        : "Seleccionar todos"}
+                    </label>
+                  </div>
+
+                  {selectedFiles.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={deleteSelectedFiles}
+                      disabled={isLoading}
+                      className="h-7 md:h-8 text-xs"
+                    >
+                      {isLoading ? (
+                        <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3 mr-1" />
+                      )}
+                      Eliminar ({selectedFiles.length})
+                    </Button>
+                  )}
                 </div>
-                <CardTitle className="text-emerald-800 mb-3 text-xl font-semibold tracking-tight mono-heading">
-                  REPORTES DETALLADOS
-                </CardTitle>
-                <p className="text-emerald-700 leading-relaxed mono-text">
-                  Genera informes y visualizaciones avanzadas para tomar decisiones estratégicas basadas en datos
-                  precisos y actualizados.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 mb-8 border border-gray-200 mall-grid"
-        >
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-8 bg-gray-100 p-1 rounded-lg">
-              <TabsTrigger
-                value="upload"
-                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md transition-all mono-text"
-              >
-                <Upload className="h-4 w-4" />
-                <span className="tracking-wide">SUBIR DATOS</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="download"
-                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md transition-all mono-text"
-              >
-                <Download className="h-4 w-4" />
-                <span className="tracking-wide">DESCARGAR DATOS</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="visualization"
-                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md transition-all mono-text"
-              >
-                <BarChart3 className="h-4 w-4" />
-                <span className="tracking-wide">VISUALIZACIÓN</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="settings"
-                className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md transition-all mono-text"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="tracking-wide">SIMULADOR</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="upload">
-              <Card className="data-card shadow-md overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-t-lg">
-                  <CardTitle className="text-blue-800 text-xl font-semibold tracking-tight mono-heading">
-                    SUBIR DATOS
-                  </CardTitle>
-                  <CardDescription className="text-blue-600 tracking-wide mono-text">
-                    Sube archivos CSV o JSON generados por la simulación
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <UploadComponent />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="download">
-              <Card className="data-card shadow-md overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-t-lg">
-                  <CardTitle className="text-blue-800 text-xl font-semibold tracking-tight mono-heading">
-                    DESCARGAR DATOS
-                  </CardTitle>
-                  <CardDescription className="text-blue-600 tracking-wide mono-text">
-                    Recupera los datos almacenados
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="flex flex-col gap-6">
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={fetchData}
-                        disabled={isLoading || files.length === 0}
-                        className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 transition-all shadow-md mono-text"
-                      >
-                        {isLoading ? (
-                          <span className="flex items-center gap-2">
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
-                            </svg>
-                            CARGANDO...
-                          </span>
-                        ) : (
-                          "OBTENER DATOS RECIENTES"
-                        )}
-                      </Button>
-
-                      <Button
-                        onClick={() => deleteData(true)}
-                        disabled={isLoading || files.length === 0}
-                        variant="destructive"
-                        className="w-full md:w-auto shadow-md mono-text"
-                      >
-                        {isLoading ? "PROCESANDO..." : "BORRAR TODOS LOS DATOS"}
-                      </Button>
-
-                      <Button
-                        onClick={fetchFilesList}
-                        disabled={isLoadingFiles}
-                        variant="outline"
-                        className="w-full md:w-auto border-blue-300 text-blue-700 hover:bg-blue-50 shadow-sm mono-text"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        ACTUALIZAR LISTA
-                      </Button>
+                <div className="space-y-2">
+                  {isLoadingFiles ? (
+                    <div className="space-y-2 md:space-y-3">
+                      <Skeleton className="h-14 md:h-16 w-full rounded-md bg-blue-100" />
+                      <Skeleton className="h-14 md:h-16 w-full rounded-md bg-blue-100" />
+                      <Skeleton className="h-14 md:h-16 w-full rounded-md bg-blue-100" />
                     </div>
-
-                    <div className="border rounded-lg border-blue-200 overflow-hidden">
-                      <div className="bg-blue-50 p-3 border-b border-blue-200">
-                        <h3 className="font-medium text-blue-800 tracking-wide mono-heading">
-                          ARCHIVOS DISPONIBLES EN AZURE
-                        </h3>
-                      </div>
-                      <div className="divide-y divide-blue-100 max-h-64 overflow-auto">
-                        {isLoadingFiles ? (
-                          <div className="p-4 space-y-3">
-                            <Skeleton className="h-12 w-full bg-blue-100" />
-                            <Skeleton className="h-12 w-full bg-blue-100" />
-                            <Skeleton className="h-12 w-full bg-blue-100" />
-                          </div>
-                        ) : files.length === 0 ? (
-                          <div className="p-6 text-center text-blue-500">
-                            <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                            <p className="mono-text">No hay archivos disponibles en Azure.</p>
-                            <p className="text-sm text-blue-400 mt-1 mono-text">
-                              Sube un archivo o genera una simulación.
-                            </p>
-                          </div>
-                        ) : (
-                          files.map((file, index) => (
-                            <div
-                              key={index}
-                              className={`p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
-                                selectedFile === file.name ? "bg-blue-50" : "hover:bg-blue-50"
-                              }`}
-                            >
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <FileText className="h-5 w-5 text-blue-600" />
-                                  <span className="font-medium text-blue-700 truncate max-w-[200px] sm:max-w-xs mono-text">
-                                    {file.name}
-                                  </span>
-                                  {selectedFile === file.name && (
-                                    <Badge className="bg-blue-600 mono-text">SELECCIONADO</Badge>
-                                  )}
-                                </div>
-                                <div className="text-xs text-blue-500 mt-1 ml-7 mono-text">
-                                  {formatDate(file.createdOn)} • {formatFileSize(file.size)}
-                                </div>
+                  ) : filteredFiles.length === 0 ? (
+                    <div className="text-center py-6 md:py-8">
+                      <Database className="h-10 w-10 md:h-12 md:w-12 text-blue-400 mx-auto mb-2" />
+                      <p className="text-blue-800 font-medium mono-text">No hay archivos disponibles</p>
+                      <p className="text-blue-600 text-xs md:text-sm mono-text">
+                        {searchQuery ? "No se encontraron resultados" : "Sube un archivo o genera una simulación"}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredFiles.map((file) => (
+                      <Card
+                        key={file.name}
+                        className={`border ${selectedFile === file.name ? "border-blue-500 bg-blue-50" : "border-blue-200 bg-white"} hover:border-blue-400 transition-all duration-200`}
+                      >
+                        <CardContent className="p-2 md:p-3">
+                          <div className="flex items-start gap-2 md:gap-3">
+                            <input
+                              type="checkbox"
+                              className="mt-1 rounded border-blue-600 text-blue-600 focus:ring-blue-500 bg-white"
+                              checked={selectedFiles.includes(file.name)}
+                              onChange={() => toggleFileSelection(file.name)}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <button
+                                onClick={() => fetchFile(file.name)}
+                                className={`text-left w-full truncate text-sm md:text-base font-medium ${selectedFile === file.name ? "text-blue-700" : "text-black"} hover:text-blue-800 mono-text`}
+                                disabled={isLoading}
+                              >
+                                {file.name}
+                              </button>
+                              <div className="flex items-center text-xs text-blue-600 gap-1 md:gap-2 mt-1">
+                                <Clock className="h-3 w-3" />
+                                <span className="truncate text-xs mono-text">{formatDate(file.createdOn)}</span>
                               </div>
-                              <div className="flex gap-2 ml-7 sm:ml-0">
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-xs text-blue-600 mono-text">{formatFileSize(file.size)}</span>
                                 <Button
+                                  variant="ghost"
                                   size="sm"
-                                  onClick={() => fetchFile(file.name)}
-                                  disabled={isLoading || selectedFile === file.name}
-                                  className="bg-blue-600 hover:bg-blue-700 mono-text"
-                                >
-                                  CARGAR
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => deleteFile(file.name)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteFile(file.name)
+                                  }}
                                   disabled={isLoading}
-                                  className="border-red-300 text-red-600 hover:bg-red-50"
+                                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </div>
-                          ))
-                        )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+
+                <div className="mt-4 flex justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={fetchFilesList}
+                    disabled={isLoadingFiles}
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50 hover:text-blue-800 text-xs md:text-sm"
+                  >
+                    {isLoadingFiles ? (
+                      <RefreshCw className="h-3 w-3 md:h-4 md:w-4 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    )}
+                    Actualizar
+                  </Button>
+
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteData()}
+                    disabled={isLoading || files.length === 0}
+                    className="text-xs md:text-sm"
+                  >
+                    <Trash2 className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    Eliminar todo
+                  </Button>
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        {/* Main content */}
+        <motion.div
+          className="flex-1 flex flex-col overflow-hidden"
+          animate={{
+            marginLeft: sidebarOpen ? 0 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Main content area */}
+          <main className="flex-1 overflow-auto p-3 md:p-6 w-full">
+            <motion.div variants={container} initial="hidden" animate="show" className="w-full max-w-none">
+              {/* Botón para mostrar/ocultar sidebar cuando está cerrado */}
+              {!sidebarOpen && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSidebarOpen(true)}
+                  className="mb-4 border-blue-200 text-blue-600"
+                >
+                  <Layers className="h-4 w-4 mr-2" />
+                  Mostrar archivos
+                </Button>
+              )}
+
+              {/* Dashboard summary cards */}
+              <motion.div
+                variants={item}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-4 md:mb-8"
+              >
+                <Card className="border-blue-200 bg-white shadow-md hover:shadow-lg transition-all">
+                  <CardContent className="p-3 md:p-6">
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="text-xs md:text-sm font-medium text-blue-600 mono-text">Archivos Disponibles</p>
+                        <h3 className="text-xl md:text-3xl font-bold text-blue-800 mono-heading mt-1">
+                          {files.length}
+                        </h3>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 md:p-3 rounded-full">
+                        <FileText className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
                       </div>
                     </div>
+                    <div className="mt-2 md:mt-4">
+                      <Progress
+                        value={files.length > 0 ? 100 : 0}
+                        className="h-1 bg-blue-100"
+                        indicatorClassName="bg-blue-500"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-                    {data.length > 0 && (
-                      <div className="mt-4">
-                        <h3 className="text-lg font-medium mb-2 text-blue-800 tracking-wide mono-heading">
-                          DATOS CARGADOS
-                        </h3>
-                        {selectedFile && (
-                          <div className="mb-2">
-                            <Badge className="bg-blue-600 mb-2 mono-text">ARCHIVO: {selectedFile}</Badge>
-                          </div>
-                        )}
-                        <div className="border rounded-md p-4 max-h-96 overflow-auto bg-blue-50 shadow-inner border-blue-200">
-                          <pre className="text-sm text-blue-700 font-mono">{JSON.stringify(data, null, 2)}</pre>
-                        </div>
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            className="border-blue-300 text-blue-700 hover:bg-blue-50 shadow-sm mono-text"
-                            onClick={() => {
-                              const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-                              const url = URL.createObjectURL(blob)
-                              const a = document.createElement("a")
-                              a.href = url
-                              a.download = "simulacion_afluencia.json"
-                              a.click()
-                            }}
-                          >
-                            DESCARGAR JSON
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="border-blue-300 text-blue-700 hover:bg-blue-50 shadow-sm mono-text"
-                            onClick={() => {
-                              // Simple CSV conversion
-                              if (data.length === 0) return
-                              const headers = Object.keys(data[0]).join(",")
-                              const csvRows = data.map((row) =>
-                                Object.values(row)
-                                  .map((value) => (typeof value === "string" ? `"${value}"` : value))
-                                  .join(","),
-                              )
-                              const csvContent = [headers, ...csvRows].join("\n")
-
-                              const blob = new Blob([csvContent], { type: "text/csv" })
-                              const url = URL.createObjectURL(blob)
-                              const a = document.createElement("a")
-                              a.href = url
-                              a.download = "simulacion_afluencia.csv"
-                              a.click()
-                            }}
-                          >
-                            DESCARGAR CSV
-                          </Button>
-                        </div>
+                <Card className="border-blue-200 bg-white shadow-md hover:shadow-lg transition-all">
+                  <CardContent className="p-3 md:p-6">
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="text-xs md:text-sm font-medium text-blue-600 mono-text">Datos Procesados</p>
+                        <h3 className="text-xl md:text-3xl font-bold text-blue-800 mono-heading mt-1">{data.length}</h3>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                      <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 md:p-3 rounded-full">
+                        <BarChart3 className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="mt-2 md:mt-4">
+                      <Progress
+                        value={data.length > 0 ? 100 : 0}
+                        className="h-1 bg-blue-100"
+                        indicatorClassName="bg-blue-500"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <TabsContent value="visualization">
-              <Card className="data-card shadow-md overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-t-lg">
-                  <CardTitle className="text-blue-800 text-xl font-semibold tracking-tight mono-heading">
-                    VISUALIZACIÓN DE DATOS
-                  </CardTitle>
-                  <CardDescription className="text-blue-600 tracking-wide mono-text">
-                    Visualiza los patrones de tráfico en el centro comercial
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
+                <Card className="border-blue-200 bg-white shadow-md hover:shadow-lg transition-all">
+                  <CardContent className="p-3 md:p-6">
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="text-xs md:text-sm font-medium text-blue-600 mono-text">Estado de Azure</p>
+                        <h3 className="text-xl md:text-3xl font-bold text-blue-800 mono-heading mt-1">Conectado</h3>
+                      </div>
+                      <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 md:p-3 rounded-full">
+                        <Database className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="mt-2 md:mt-4">
+                      <Progress value={100} className="h-1 bg-blue-100" indicatorClassName="bg-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Main tabs - sin contenedor */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="bg-white p-1 rounded-lg shadow-sm border border-blue-200 mb-4 md:mb-6 w-full flex">
+                  <TabsTrigger
+                    value="upload"
+                    className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-blue-600"
+                  >
+                    <Upload className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    Subir Archivo
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="data"
+                    className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-blue-600"
+                  >
+                    <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    Estadísticas 
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="settings"
+                    className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-blue-600"
+                  >
+                    <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    Simulador
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="iot"
+                    className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-blue-600"
+                  >
+                    <Cpu className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    IOT
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Contenido de las pestañas sin contenedor */}
+                <TabsContent value="upload" className="mt-0 w-full">
+                  <UploadComponent onUploadComplete={fetchFilesList} />
+                </TabsContent>
+
+                <TabsContent value="data" className="mt-0 w-full">
                   <DataVisualization data={data} />
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </TabsContent>
 
-            <TabsContent value="settings">
-              <Card className="data-card shadow-md overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 rounded-t-lg">
-                  <CardTitle className="text-blue-800 text-xl font-semibold tracking-tight mono-heading">
-                    SIMULADOR
-                  </CardTitle>
-                  <CardDescription className="text-blue-600 tracking-wide mono-text">
-                    Configura los parámetros para generar nuevos datos de simulación
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
+                <TabsContent value="settings" className="mt-0 w-full">
                   <SimulationSettings />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+
+                <TabsContent value="iot" className="mt-0 w-full">
+                  <IoTSensors />
+                </TabsContent>
+              </Tabs>
+            </motion.div>
+          </main>
+
+          <footer className="bg-white text-blue-800 py-2 md:py-4 px-4 md:px-6 border-t border-blue-200 shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full">
+              <div className="text-xs md:text-sm text-blue-600 mono-text">
+                © {new Date().getFullYear()} Mall Traffic Analytics. Todos los derechos reservados.
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-blue-200 text-blue-600 text-xs">
+                  v1.0.0
+                </Badge>
+                <Badge variant="outline" className="border-blue-200 text-teal-600 text-xs">
+                  Azure Storage Conectado
+                </Badge>
+              </div>
+            </div>
+          </footer>
         </motion.div>
       </div>
-
-      <footer className="bg-gradient-to-r from-blue-900 to-teal-800 text-white py-10 px-4 mt-8">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2 tracking-wide mono-heading">
-                <Building2 className="h-5 w-5" />
-                ANÁLISIS DE TRÁFICO
-              </h3>
-              <p className="text-blue-200 mono-text">
-                Sistema avanzado para el monitoreo y análisis de patrones de tráfico en centros comerciales.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-4 tracking-wide mono-heading">CARACTERÍSTICAS</h3>
-              <ul className="space-y-2 text-blue-200 mono-text">
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-400"></div>
-                  Visualización de datos en tiempo real
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-teal-400"></div>
-                  Análisis por zonas y categorías
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-400"></div>
-                  Simulación de escenarios
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-400"></div>
-                  Integración con Azure Storage
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-bold mb-4 tracking-wide mono-heading">CONTACTO</h3>
-              <p className="text-blue-200 mb-4 mono-text">
-                Para soporte técnico o consultas sobre el sistema, contáctenos en:
-              </p>
-              <a
-                href="mailto:soporte@analisisdetrafico.com"
-                className="flex items-center gap-2 text-blue-300 hover:text-blue-200 transition-colors mono-text"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-                soporte@analisisdetrafico.com
-              </a>
-            </div>
-          </div>
-
-          <div className="border-t border-blue-700 mt-8 pt-6 text-center text-blue-300 mono-text">
-            <p>© {new Date().getFullYear()} ANÁLISIS DE TRÁFICO EN CENTRO COMERCIAL. TODOS LOS DERECHOS RESERVADOS.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
-

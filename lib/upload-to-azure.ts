@@ -187,4 +187,3 @@ function parseCSV(csvContent) {
       return entry
     })
 }
-

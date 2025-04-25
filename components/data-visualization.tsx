@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
@@ -147,7 +146,7 @@ export default function DataVisualization({ data }: { data: any[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="text-center p-10">
+      <div className="text-center p-10 bg-white rounded-lg shadow-md border border-blue-200">
         <p className="text-blue-600 font-medium">
           No hay datos disponibles para visualizar. Por favor, descarga datos de Azure o sube un archivo.
         </p>
@@ -157,7 +156,7 @@ export default function DataVisualization({ data }: { data: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg border border-blue-100">
         <div>
           <Label htmlFor="group-by" className="text-blue-700">
             Agrupar por
@@ -244,74 +243,40 @@ export default function DataVisualization({ data }: { data: any[] }) {
         </TabsList>
 
         <TabsContent value="chart" className="pt-4">
-          <Card className="border-blue-200 shadow-lg">
-            <CardContent className="pt-6">
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={processedData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 60,
+          <div className="bg-white p-6 rounded-lg border border-blue-100">
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={processedData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 60,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fill: "#1e40af" }} angle={-45} textAnchor="end" height={60} />
+                  <YAxis
+                    tick={{ fill: "#1e40af" }}
+                    label={{
+                      value: "Personas",
+                      angle: -90,
+                      position: "insideLeft",
+                      fill: "#1e40af",
                     }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" tick={{ fill: "#1e40af" }} angle={-45} textAnchor="end" height={60} />
-                    <YAxis
-                      tick={{ fill: "#1e40af" }}
-                      label={{
-                        value: "Personas",
-                        angle: -90,
-                        position: "insideLeft",
-                        fill: "#1e40af",
-                      }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#EFF6FF",
-                        borderColor: "#3B82F6",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px rgba(59, 130, 246, 0.2)",
-                      }}
-                      formatter={(value) => [`${value} personas`, "Total"]}
-                      labelFormatter={(name) =>
-                        `${
-                          groupBy === "zona"
-                            ? "Zona"
-                            : groupBy === "categoria"
-                              ? "Categoría"
-                              : groupBy === "hora"
-                                ? "Hora"
-                                : groupBy === "clima"
-                                  ? "Clima"
-                                  : "Día"
-                        }: ${name}`
-                      }
-                    />
-                    <Legend wrapperStyle={{ paddingTop: 10 }} />
-                    <Bar dataKey="value" name="Personas" fill="#0284c7" radius={[4, 4, 0, 0]}>
-                      {processedData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="table" className="pt-4">
-          <Card className="border-blue-200 shadow-lg">
-            <CardContent className="pt-6">
-              <div className="border rounded-md overflow-hidden border-blue-200">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-blue-100">
-                      <th className="text-left p-3 font-medium text-blue-800">
-                        {groupBy === "zona"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#EFF6FF",
+                      borderColor: "#3B82F6",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px rgba(59, 130, 246, 0.2)",
+                    }}
+                    formatter={(value) => [`${value} personas`, "Total"]}
+                    labelFormatter={(name) =>
+                      `${
+                        groupBy === "zona"
                           ? "Zona"
                           : groupBy === "categoria"
                             ? "Categoría"
@@ -319,26 +284,55 @@ export default function DataVisualization({ data }: { data: any[] }) {
                               ? "Hora"
                               : groupBy === "clima"
                                 ? "Clima"
-                                : "Día"}
-                      </th>
-                      <th className="text-right p-3 font-medium text-blue-800">Total de Personas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {processedData.map((item, index) => (
-                      <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-blue-50"}>
-                        <td className="p-3 text-blue-700">{item.name}</td>
-                        <td className="p-3 text-right font-medium text-blue-700">{item.value}</td>
-                      </tr>
+                                : "Día"
+                      }: ${name}`
+                    }
+                  />
+                  <Legend wrapperStyle={{ paddingTop: 10 }} />
+                  <Bar dataKey="value" name="Personas" fill="#0284c7" radius={[4, 4, 0, 0]}>
+                    {processedData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="table" className="pt-4">
+          <div className="bg-white p-6 rounded-lg border border-blue-100">
+            <div className="border rounded-md overflow-hidden border-blue-200">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-blue-100">
+                    <th className="text-left p-3 font-medium text-blue-800">
+                      {groupBy === "zona"
+                        ? "Zona"
+                        : groupBy === "categoria"
+                          ? "Categoría"
+                          : groupBy === "hora"
+                            ? "Hora"
+                            : groupBy === "clima"
+                              ? "Clima"
+                              : "Día"}
+                    </th>
+                    <th className="text-right p-3 font-medium text-blue-800">Total de Personas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {processedData.map((item, index) => (
+                    <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-blue-50"}>
+                      <td className="p-3 text-blue-700">{item.name}</td>
+                      <td className="p-3 text-right font-medium text-blue-700">{item.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-

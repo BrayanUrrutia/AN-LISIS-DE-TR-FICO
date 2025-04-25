@@ -15,4 +15,3 @@ export function getAzureConnectionString() {
 export function checkAzureConfig() {
   return azureConfig.isConfigured
 }
-
