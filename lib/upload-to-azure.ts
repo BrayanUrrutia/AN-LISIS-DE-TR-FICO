@@ -145,10 +145,10 @@ export async function deleteAllFilesFromAzure() {
 }
 
 // Función para convertir un stream a string
-async function streamToString(readableStream) {
-  return new Promise((resolve, reject) => {
-    const chunks = []
-    readableStream.on("data", (data) => {
+async function streamToString(readableStream: any) {
+  return new Promise<string>((resolve, reject) => {
+    const chunks: string[] = []
+    readableStream.on("data", (data: Buffer) => {
       chunks.push(data.toString())
     })
     readableStream.on("end", () => {
@@ -159,7 +159,7 @@ async function streamToString(readableStream) {
 }
 
 // Función para parsear CSV
-function parseCSV(csvContent) {
+function parseCSV(csvContent: string) {
   const lines = csvContent.split("\n")
   const headers = lines[0].split(",").map((header) => header.trim().replace(/^"(.*)"$/, "$1"))
 
@@ -168,7 +168,7 @@ function parseCSV(csvContent) {
     .filter((line) => line.trim())
     .map((line) => {
       const values = line.split(",")
-      const entry = {}
+      const entry: Record<string, string | number> = {}
 
       headers.forEach((header, index) => {
         let value = values[index]
@@ -177,7 +177,7 @@ function parseCSV(csvContent) {
           value = value.trim().replace(/^"(.*)"$/, "$1")
 
           // Convertir a número si es posible
-          if (!isNaN(value) && value !== "") {
+          if (!isNaN(Number(value)) && value !== "") {
             value = Number(value)
           }
         }

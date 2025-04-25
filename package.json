@@ -62,9 +62,9 @@
     "@emotion/is-prop-valid": "latest",
     "@stripe/react-stripe-js": "latest",
     "@azure/storage-blob": "latest",
+    "framer-motion": "latest",
     "formidable": "latest",
-    "fs": "latest",
-    "framer-motion": "latest"
+    "fs": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

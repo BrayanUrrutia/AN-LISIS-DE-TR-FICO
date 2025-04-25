@@ -69,7 +69,7 @@ export async function POST(req: Request) {
           .filter((line) => line.trim())
           .map((line) => {
             const values = line.split(",")
-            const entry = {}
+            const entry: Record<string, string | number> = {}
 
             headers.forEach((header, index) => {
               let value = values[index]
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
                 value = value.trim().replace(/^"(.*)"$/, "$1")
 
                 // Convertir a número si es posible
-                if (!isNaN(value as any) && value !== "") {
+                if (!isNaN(Number(value)) && value !== "") {
                   value = Number(value)
                 }
               }

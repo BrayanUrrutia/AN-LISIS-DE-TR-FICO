@@ -408,6 +408,7 @@ export default function HomePage() {
     show: { opacity: 1, y: 0 },
   }
 
+  // Corregir la función formatDate para manejar correctamente los tipos
   const formatDate = (dateString: string | undefined | null) => {
     if (!dateString) return "Fecha desconocida"
     const date = new Date(dateString)
@@ -420,14 +421,16 @@ export default function HomePage() {
     }).format(date)
   }
 
-  const formatFileSize = (bytes) => {
+  // Corregir la función formatFileSize para manejar correctamente los tipos
+  const formatFileSize = (bytes: number | undefined | null) => {
     if (!bytes) return "Tamaño desconocido"
     const units = ["B", "KB", "MB", "GB", "TB"]
     let i = 0
-    for (i; bytes >= 1024 && i < units.length - 1; i++) {
-      bytes /= 1024
+    let size = bytes
+    for (i; size >= 1024 && i < units.length - 1; i++) {
+      size /= 1024
     }
-    return `${bytes.toFixed(2)} ${units[i]}`
+    return `${size.toFixed(2)} ${units[i]}`
   }
 
   return (
